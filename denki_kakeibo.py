@@ -12,44 +12,40 @@
 import os
 import re
 import time
-import json
-import requests
-
 import enum
 
 from selenium import webdriver
 from bs4 import BeautifulSoup
 
-_URL_LOGIN  = 'https://www.kakeibo.tepco.co.jp/dk/aut/login/' # ログインページ
-_URL_LOGOUT = 'https://www.kakeibo.tepco.co.jp/dk/doLogout'   # ログアウトアドレス
-_URL_TOP    = 'https://www.kakeibo.tepco.co.jp/dk/com/menu/'  # ログイン後のトップページ
-_WAIT_TIME = 3 # ページ遷移時に描画を待機する時間
+_URL_LOGIN  = 'https://www.kakeibo.tepco.co.jp/dk/aut/login/'  # ログインページ
+_URL_LOGOUT = 'https://www.kakeibo.tepco.co.jp/dk/doLogout'    # ログアウトアドレス
+_URL_TOP    = 'https://www.kakeibo.tepco.co.jp/dk/com/menu/'   # ログイン後のトップページ
+_WAIT_TIME = 3  # ページ遷移時に描画を待機する時間
 
-Page = enum.Enum('Page', 'login top halfhour')
+Page = enum.Enum('Page', 'login top monthly halfhour')
+
 
 class DenkiKakeibo:
     """ Scraper for DenkiKakeibo """
-
 
     def __init__(self, username, password):
         """ インスタンスの生成とログイン処理 """
         self._driver = webdriver.PhantomJS(service_log_path=os.path.devnull)
         self._driver.timeout = 10
 
-
         # ログインページに移動
         self._driver.get(_URL_LOGIN)
         self._driver.find_element_by_id('idId').send_keys(username)
         self._driver.find_element_by_id('idPassword').send_keys(password)
         self._driver.find_element_by_id('idLogin').click()
-        
+
         # ログインできたことを確認
         soup = self._make_soup()
         if soup.title.string == 'でんき家計簿　会員ホーム':
             self._page = Page.top
         else:
             self._page = Page.login
-    
+
     def __enter__(self):
         """ with句の戻り値 """
         return self
@@ -72,12 +68,62 @@ class DenkiKakeibo:
 
         return soup
 
+    def fetch_usage_monthly(self):
+        """ 月別使用量のスクレイピング """
+
+        if self._page == Page.login:
+            return False
+
+        self._driver.get(_URL_TOP)
+        self._driver.execute_script("submitForm(fnjdoc.forms['com_menuActionForm'], '/dk/com/menu/goElectricUsageAmount', null);")
+        time.sleep(_WAIT_TIME)
+        self._page = Page.monthly
+
+        # 月別グラフをパースしてJSON形式で出力
+        soup = self._make_soup()
+        json_dict = self._parse_usage_monthly(soup)
+
+        return json_dict
+
+    def _parse_usage_monthly(self, soup):
+        """ 月別グラフのパース """
+
+        # 月別データをパース
+        month = [th.text for th in soup.select('.view_table th')]
+        value = [td.text for td in soup.select('.view_table td')]
+        # 空の値を削除
+        value = [v.replace('---', '') for v in value]
+      
+        # ヘッダを削除
+        dellist = lambda items, indexes: [item for index, item in enumerate(items) if index not in indexes]
+        month = dellist(month, [i*13 for i in range(2)])
+        value = dellist(value, [i*13 for i in range(6)])
+
+        # JSON形式で出力
+        def month_json(month, day, kWh, payment):
+            return {'month':  month,
+                    'value': {'day': day,
+                              'kWh': kWh.replace(',', ''),
+                              'payment': payment.replace(',', '')
+                              }}
+        monthly = []
+        for i in range(12):
+            monthly.append(month_json(month[i], value[i], value[i+12], value[i+24]))
+        for i in range(12):
+            monthly.append(month_json(month[i+12], value[i+36], value[i+12+36], value[i+24+36]))
+
+        json_dict = {'monthly': monthly}
+
+        return json_dict
+
+
+
     def fetch_usage_30Min(self, previous=0):
         """ 時間別グラフのスクレイピング """
 
         if self._page == Page.login:
             return False
-        
+
         if self._page != Page.halfhour or previous == 0:
             # 時間別グラフに移動
             self._driver.get(_URL_TOP) # 念のためトップページに移動
@@ -136,5 +182,6 @@ if __name__ == '__main__':
         json_dict = dk.fetch_usage_30Min(previous=1)
         print(json_dict)
 
-
-
+        # 月別データを取得
+        json_dict = dk.fetch_usage_monthly()
+        print(json_dict)
