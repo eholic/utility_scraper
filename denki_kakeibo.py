@@ -45,6 +45,7 @@ class DenkiKakeibo:
             self._page = Page.top
         else:
             self._page = Page.login
+            print('Login failed.')
 
     def __enter__(self):
         """ with句の戻り値 """
