@@ -100,7 +100,7 @@ class MyTokyoGas:
             return {'month':   month,
                     'payment': payment.replace(',', '')}
 
-        # 
+        # 最古のデータの年を計算
         if month[0] == u'1':
             year = this_year - 2
         else:
