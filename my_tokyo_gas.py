@@ -108,14 +108,14 @@ class MyTokyoGas:
 
         # 前年
         for i in range(12):
-            monthly.append(month_json(str(year)+'/'+month[i], value[i+12]))
+            monthly.append(month_json(str(year)+'/'+month[i].zfill(2), value[i+12]))
             # 年の繰り上げ
             if month[i] == u'12':
                 year = year + 1
 
         # 当年
         for i in range(12):
-            monthly.append(month_json(str(year)+'/'+month[i], value[i]))
+            monthly.append(month_json(str(year)+'/'+month[i].zfill(2), value[i]))
             # 年の繰り上げ
             if month[i] == u'12':
                 year = year + 1
