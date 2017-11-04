@@ -3,8 +3,10 @@
 
 ## Quick Start
 
+### DenkiKakeibo
 ```python
-from denki_kakeibo import DenkiKakeibo
+from utility_scraper.denki_kakeibo import DenkiKakeibo
+
 with DenkiKakeibo('username', 'password') as dk:
     # 最新の時間データを取得
     json_dict = dk.fetch_usage_30Min()
@@ -19,9 +21,20 @@ with DenkiKakeibo('username', 'password') as dk:
     # 月別のデータを取得
     json_dict = dk.fetch_usage_monthly()
     print(json_dict)
-    # {'monthly': [{'month': 'H27/11', 'value': {'day': '', 'kWh': '', 'payment': ''}}, ...
-
+    # {'monthly': [{'month': '2015/11', 'value': {'day': '', 'kWh': '', 'payment': ''}}, 
 ```
+
+### MyTokyoGas
+```python
+from utility_scraper.my_tokyo_gas import MyTokyoGas
+
+with MyTokyoGas('username', 'password') as tg:
+    # 月別のデータを取得
+    json_dict = tg.fetch_usage_monthly()
+    print(json_dict)
+    # {'monthly': [{'month': '2014/11', 'payment': ''}, ...
+```
+
 
 ## License
 This code is released under the MIT License, see ![LICENSE](LICENSE)

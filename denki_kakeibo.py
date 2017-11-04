@@ -100,9 +100,17 @@ class DenkiKakeibo:
         month = dellist(month, [i*13 for i in range(2)])
         value = dellist(value, [i*13 for i in range(6)])
 
+        # 和暦を西暦に
+        def be_chiristian(wareki):
+            yymm = wareki.split('/')
+            yyyy = int(yymm[0].replace('H', '')) + 1988
+            return str(yyyy) + '/' + yymm[1]
+
+
+
         # JSON形式で出力
         def month_json(month, day, kWh, payment):
-            return {'month':  month,
+            return {'month':  be_chiristian(month),
                     'value': {'day': day,
                               'kWh': kWh.replace(',', ''),
                               'payment': payment.replace(',', '')
@@ -116,8 +124,6 @@ class DenkiKakeibo:
         json_dict = {'monthly': monthly}
 
         return json_dict
-
-
 
     def fetch_usage_30Min(self, previous=0):
         """ 時間別グラフのスクレイピング """
