@@ -102,9 +102,9 @@ class MyTokyoGas:
 
         # 最古のデータの年を計算
         if month[0] == u'1':
-            year = this_year - 2
+            year = this_year - 1
         else:
-            year = this_year - 3
+            year = this_year - 2
 
         # 前年
         for i in range(12):
