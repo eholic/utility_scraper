@@ -32,7 +32,7 @@ with MyTokyoGas('username', 'password') as tg:
     # 月別のデータを取得
     json_dict = tg.fetch_usage_monthly()
     print(json_dict)
-    # {'monthly': [{'month': '2014/11', 'payment': ''}, ...
+    # {'monthly': [{'month': '2015/11', 'payment': ''}, ...
 ```
 
 
