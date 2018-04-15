@@ -37,4 +37,4 @@ with MyTokyoGas('username', 'password') as tg:
 
 
 ## License
-This code is released under the MIT License, see ![LICENSE](LICENSE)
+This code is released under the MIT License, see [LICENSE](LICENSE)
